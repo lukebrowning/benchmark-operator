@@ -20,6 +20,7 @@ import urllib3
 
 def _check_index(server, uuid, index, es_ssl):
 
+    print(f"_check_index server={server} uuid={uuid} index={index} es_ssl={es_ssl}")
     if es_ssl == "true":
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         ssl_ctx = ssl.create_default_context()
@@ -27,7 +28,7 @@ def _check_index(server, uuid, index, es_ssl):
         ssl_ctx.verify_mode = ssl.CERT_NONE
         es = elasticsearch.Elasticsearch([server], send_get_body_as='POST', ssl_context=ssl_ctx, use_ssl=True)
     else:
-        es = elasticsearch.Elasticsearch([server], send_get_body_as='POST')
+        es = elasticsearch.Elasticsearch([server], send_get_body_as='POST', verify_certs=False, use_ssl=False)
     es.indices.refresh(index=index)
     results = es.search(index=index, body={'query': {'term': {'uuid.keyword': uuid}}}, size=1)
     if results['hits']['total']['value'] > 0:
